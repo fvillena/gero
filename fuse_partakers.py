@@ -31,7 +31,7 @@ while pending_selection:
 
 partaker_caption = list(duplicated_partakers_dict.keys())[user_input]
 
-print(f"Partaker {partaker_caption} is going to be fused.")
+print(f"Partaker {partaker_caption} is beign fused.")
 
 src.fuse_partakers(
     conn,
