@@ -1,0 +1,11 @@
+/.env
+/.ipynb_checkpoints
+/delete_surveys.ipynb
+/find_duplicated.ipynb
+/fuse_partakers.py
+/get-surveys.ipynb
+/inclusion_informante_primera_visita_desarrollo.xlsx
+/inclusion_informante_primera_visita_produccion.xlsx
+/src.py
+/tests.py
+/__pycache__
