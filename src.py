@@ -82,36 +82,42 @@ def fuse_partakers(conn,partaker_uuids,partaker_caption):
     surveys_to_move = surveys.drop_duplicates(subset=['instrument_uuid','data'])
     if len(surveys_to_move) > 0:
         for survey in surveys_to_move.survey_uuid:
-            cur = conn.cursor()
-            query = f""" UPDATE public.cohorte_v2
-                    SET super = '{partaker_uuids[0]}'
-                    WHERE uuid = '{survey}'"""
-            cur.execute(query)
-            query = f""" UPDATE public.cohorte_v2
-                    SET information = information::jsonb || '{{"PartakerID":"{partaker_uuids[0]}"}}'
-                    WHERE uuid = '{survey}'"""
-            cur.execute(query)
+            move_survey_to_partaker(conn,survey,partaker_uuids[0])
     if len(surveys_to_delete.survey_uuid) > 0:
         for survey in surveys_to_delete.survey_uuid:
-            query = f""" UPDATE public.cohorte_v2
-                    SET deleted = true
-                    WHERE uuid = '{survey}'"""
-            cur.execute(query)
+            delete_object(conn,survey)
     if len(partaker_uuids) > 1:
         for partaker_id in partaker_uuids[1:]:
-            query = f""" UPDATE public.cohorte_v2
-                    SET deleted = true
-                    WHERE uuid = '{partaker_id}'"""
-            cur.execute(query)
+            delete_object(conn,partaker_id)
     change_partaker_caption(conn,partaker_uuids[0],partaker_caption)
-    conn.commit()
-    cur.close()
 
 def change_partaker_caption(conn,partaker_uuid,new_caption):
     cur = conn.cursor()
     query = f""" UPDATE public.cohorte_v2
     SET information = information::jsonb || '{{"Caption":"{new_caption}"}}'
     WHERE uuid = '{partaker_uuid}'"""
+    cur.execute(query)
+    conn.commit()
+    cur.close()
+
+def delete_object(conn,object_uuid):
+    cur = conn.cursor()
+    query = f""" UPDATE public.cohorte_v2
+                    SET deleted = true
+                    WHERE uuid = '{object_uuid}'"""
+    cur.execute(query)
+    conn.commit()
+    cur.close()
+
+def move_survey_to_partaker(conn,survey_uuid,partaker_uuid):
+    cur = conn.cursor()
+    query = f""" UPDATE public.cohorte_v2
+            SET super = '{partaker_uuid}'
+            WHERE uuid = '{survey_uuid}'"""
+    cur.execute(query)
+    query = f""" UPDATE public.cohorte_v2
+            SET information = information::jsonb || '{{"PartakerID":"{partaker_uuid}"}}'
+            WHERE uuid = '{survey_uuid}'"""
     cur.execute(query)
     conn.commit()
     cur.close()
