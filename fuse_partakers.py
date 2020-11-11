@@ -1,0 +1,48 @@
+import pandas as pd
+from sqlalchemy import create_engine
+import re
+import numpy as np
+import itertools
+import psycopg2
+import src
+import dotenv
+import os
+
+dotenv.load_dotenv(".env")
+
+conn = src.create_connection(
+    user=os.environ.get("user"),
+    password=os.environ.get("password"),
+    host=os.environ.get("host"),
+    port=os.environ.get("port"),
+    database=os.environ.get("database")
+)
+
+duplicated_partakers_dict = src.get_duplicated_partakers(conn)
+print("Available partakers to fuse:")
+for i,partaker in enumerate(duplicated_partakers_dict.keys()):
+    print(f"{i}\t{partaker}")
+
+pending_selection = True
+while pending_selection:
+    user_input = input(f"Enter the number of the partaker to fuse (0 - {len(duplicated_partakers_dict)-1}): ")
+    try:
+        if (int(user_input) < len(duplicated_partakers_dict)) & (int(user_input) >= 0):
+            pending_selection = False
+            user_input = int(user_input)
+        else:
+            print("Enter a valid partaker number.")
+    except:
+        print("Enter a valid partaker number.")
+
+partaker_caption = list(duplicated_partakers_dict.keys())[user_input]
+
+print(f"Partaker {partaker_caption} is going to be fused.")
+
+src.fuse_partakers(
+    conn,
+    duplicated_partakers_dict[partaker_caption],
+    partaker_caption.upper()
+)
+
+print(f"Partaker {partaker_caption} was successfully fused.")
