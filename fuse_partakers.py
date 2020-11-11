@@ -1,9 +1,3 @@
-import pandas as pd
-from sqlalchemy import create_engine
-import re
-import numpy as np
-import itertools
-import psycopg2
 import src
 import dotenv
 import os
