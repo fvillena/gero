@@ -122,7 +122,7 @@ def move_survey_to_partaker(conn,survey_uuid,partaker_uuid):
     conn.commit()
     cur.close()
 
-def get_object(conn,object_uuid):
+def get_objects(conn,object_uuids):
     cur = conn.cursor()
     query = f"""
     SELECT
@@ -130,10 +130,13 @@ def get_object(conn,object_uuid):
     FROM 
         public.cohorte_v2
     WHERE
-        uuid = '{object_uuid}'
+        uuid in {str(object_uuids).replace("[","(").replace("]",")")}
     """
     cur.execute(query)
-    result = cur.fetchone()
+    results = cur.fetchall()
     columns = [desc[0] for desc in cur.description]
-    o = zip(columns,result)
-    return dict(o)
+    os = []
+    for result in results:
+        o = dict(zip(columns,result))
+        os.append(o)
+    return os
