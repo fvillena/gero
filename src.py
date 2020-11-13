@@ -70,7 +70,7 @@ def get_partaker_surveys(conn,partaker_uuids):
     FROM public.cohorte_v2
     WHERE classname = 'Survey'
         AND deleted = 'false'
-        AND super IN ('{partaker_uuids}');
+        AND super IN ('{str(partaker_uuids).replace("[","(").replace("]",")")}');
 
     """
     cursor.execute(query)
