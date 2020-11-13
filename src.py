@@ -70,7 +70,7 @@ def get_partaker_surveys(conn,partaker_uuids):
     FROM public.cohorte_v2
     WHERE classname = 'Survey'
         AND deleted = 'false'
-        AND super IN ('e010d933-6d76-4605-9107-0485177bb83a');
+        AND super IN ('{partaker_uuids}');
 
     """
     cursor.execute(query)
@@ -145,3 +145,24 @@ def get_objects(conn,object_uuids):
         o = dict(zip(columns,result))
         os.append(o)
     return os
+
+def get_partaker_booklets(conn,partaker_uuid):
+    surveys = get_partaker_surveys(conn,[partaker_uuid])
+    booklets = set([(survey["booklet_id"],survey["created"]) for survey in surveys])
+    return booklets
+
+def get_surveys_from_booklet(conn,booklet):
+    cursor = conn.cursor()
+    query = f"""
+    SELECT
+        uuid
+    FROM public.cohorte_v2
+    WHERE classname = 'Survey'
+        AND deleted = 'false'
+        AND information ->> 'BookletID' = '{booklet[0]}'
+        AND created = {booklet[1]};
+
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    return [survey[0] for survey in result]
