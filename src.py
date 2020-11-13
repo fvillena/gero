@@ -165,3 +165,12 @@ def get_surveys_from_booklet(conn,booklet):
     cursor.execute(query)
     result = cursor.fetchall()
     return [survey[0] for survey in result]
+
+def change_object_creation_time(conn,object_uuid,creation_time):
+    cur = conn.cursor()
+    query = f""" UPDATE public.cohorte_v2
+    SET created = {creation_time}
+    WHERE uuid = '{object_uuid}'"""
+    cur.execute(query)
+    conn.commit()
+    cur.close()
