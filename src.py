@@ -58,17 +58,18 @@ def get_partaker_surveys(conn,partaker_uuids):
     cursor = conn.cursor()
     query = f"""
     SELECT
-    uuid AS survey_uuid,
-    information ->> 'PartakerID' AS partaker_uuid,
-    information ->> 'InstrumentID' AS instrument_uuid,
-    information ->> 'Caption' AS survey_name,
-    information ->> 'Description' AS survey_description,
-    information ->> 'Data' AS data
+		uuid AS survey_uuid,
+		created,
+		information ->> 'PartakerID' AS partaker_uuid,
+		information ->> 'InstrumentID' AS instrument_uuid,
+		information ->> 'Caption' AS survey_name,
+		information ->> 'Description' AS survey_description,
+		information ->> 'BookletID' AS booklet_id,
+		information ->> 'Data' AS data
     FROM public.cohorte_v2
     WHERE classname = 'Survey'
         AND deleted = 'false'
-        AND super IN {str(partaker_uuids).replace("[","(").replace("]",")")};
-
+        AND super IN ('e010d933-6d76-4605-9107-0485177bb83a');
     """
     cursor.execute(query)
     result = cursor.fetchall()
