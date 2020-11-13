@@ -67,17 +67,19 @@ def get_partaker_surveys(conn,partaker_uuids):
     FROM public.cohorte_v2
     WHERE classname = 'Survey'
         AND deleted = 'false'
-        AND super IN {str(tuple(partaker_uuids))};
+        AND super IN {str(partaker_uuids).replace("[","(").replace("]",")")};
 
     """
     cursor.execute(query)
     result = cursor.fetchall()
     columns = [desc[0] for desc in cursor.description]
-    surveys = pd.DataFrame(result,columns=columns).fillna(value=np.nan)
+    surveys = []
+    for survey in result:
+        surveys.append(dict(zip(columns,survey)))
     return surveys
 
 def fuse_partakers(conn,partaker_uuids,partaker_caption):
-    surveys = get_partaker_surveys(conn,partaker_uuids)
+    surveys = pd.DataFrame(get_partaker_surveys(conn,partaker_uuids))
     surveys_to_delete = surveys[surveys.duplicated(subset=['instrument_uuid','data'])]
     surveys_to_move = surveys.drop_duplicates(subset=['instrument_uuid','data'])
     if len(surveys_to_move) > 0:
