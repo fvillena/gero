@@ -71,7 +71,6 @@ def get_partaker_surveys(conn,partaker_uuids):
     WHERE classname = 'Survey'
         AND deleted = 'false'
         AND super IN {str(partaker_uuids).replace("[","(").replace("]",")")};
-
     """
     cursor.execute(query)
     result = cursor.fetchall()
@@ -148,7 +147,7 @@ def get_objects(conn,object_uuids):
 
 def get_partaker_booklets(conn,partaker_uuid):
     surveys = get_partaker_surveys(conn,[partaker_uuid])
-    booklets = set([(survey["booklet_id"],survey["created"]) for survey in surveys])
+    booklets = set([(survey["booklet_id"],partaker_uuid,survey["created"]) for survey in surveys])
     return booklets
 
 def get_surveys_from_booklet(conn,booklet):
@@ -160,8 +159,8 @@ def get_surveys_from_booklet(conn,booklet):
     WHERE classname = 'Survey'
         AND deleted = 'false'
         AND information ->> 'BookletID' = '{booklet[0]}'
-        AND created = {booklet[1]};
-
+        AND created = {booklet[2]}
+        AND super = '{booklet[1]}';
     """
     cursor.execute(query)
     result = cursor.fetchall()
