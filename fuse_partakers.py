@@ -1,8 +1,13 @@
 import src
 import dotenv
 import os
+import argparse
 
-dotenv.load_dotenv(".env")
+parser = argparse.ArgumentParser(description='Partaker fuser', usage='%(prog)s [options]')
+parser.add_argument("--environment", help="Name of the env file", default="dev.env")
+args = parser.parse_args()
+
+dotenv.load_dotenv(args.environment)
 
 conn = src.create_connection(
     user=os.environ.get("user"),
