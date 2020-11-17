@@ -4,7 +4,7 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser(description='Partaker fuser', usage='%(prog)s [options]')
-parser.add_argument("--environment", help="Name of the env file", default="dev.env")
+parser.add_argument("--environment","-e", help="Name of the env file", default="dev.env")
 args = parser.parse_args()
 
 dotenv.load_dotenv(args.environment)
