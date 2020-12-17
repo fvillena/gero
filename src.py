@@ -176,3 +176,12 @@ def change_object_creation_time(conn,object_uuid,creation_time):
     cur.execute(query)
     conn.commit()
     cur.close()
+
+def change_survey_instant(conn,object_uuid,instant):
+    cur = conn.cursor()
+    query = f""" UPDATE public.cohorte_v2
+    SET information = information::jsonb || '{{"Instant":"{instant}"}}'
+    WHERE uuid = '{object_uuid}'"""
+    cur.execute(query)
+    conn.commit()
+    cur.close()
