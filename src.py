@@ -13,17 +13,19 @@ def create_connection(user,password,host,port,database):
         return connection
     except (Exception, psycopg2.Error) as error :
         print ("Error", error)
-def uuid_from_caption(caption,connection):
+def uuid_from_caption(caption,connection,deleted=False):
+    deleted = "true" if deleted else "false"
     cursor = connection.cursor()
-    query = f"SELECT uuid FROM cohorte_v2 WHERE classname = 'Partaker'  AND information ->> 'Caption' = '{caption}'"
+    query = f"SELECT uuid FROM cohorte_v2 WHERE classname = 'Partaker'  AND information ->> 'Caption' = '{caption}' AND deleted = {deleted}"
     cursor.execute(query)
     result = cursor.fetchall()
     if len(result) > 1:
-        raise Exception
+        raise Exception(f"partaker {caption} has more than one uuid")
     if len(result) == 0:
-        raise Exception
+        raise Exception(f"partaker {caption} has no uuid")
     uuid = result[0][0]
     return uuid
+
 
 def extract_code(x):
     try:
