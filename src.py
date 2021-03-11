@@ -56,7 +56,8 @@ def get_duplicated_partakers(conn):
     duplicated_partakers_dict = duplicated_partakers.groupby('partaker_id')['partaker_uuid'].apply(list).to_dict()
     return duplicated_partakers_dict
 
-def get_partaker_surveys(conn,partaker_uuids):
+def get_partaker_surveys(conn,partaker_uuids,deleted=False):
+    deleted = "true" if deleted else "false"
     cursor = conn.cursor()
     query = f"""
     SELECT
@@ -71,7 +72,7 @@ def get_partaker_surveys(conn,partaker_uuids):
         information ->> 'Data' AS data
     FROM public.cohorte_v2
     WHERE classname = 'Survey'
-        AND deleted = 'false'
+        AND deleted = {deleted}
         AND super IN {str(partaker_uuids).replace("[","(").replace("]",")")};
     """
     cursor.execute(query)
