@@ -2,6 +2,7 @@ import psycopg2
 import numpy as np
 import pandas as pd
 import re
+import json
 
 def create_connection(user,password,host,port,database):
     try:
@@ -147,6 +148,38 @@ def get_objects(conn,object_uuids):
         o = dict(zip(columns,result))
         os.append(o)
     return os
+
+def get_surveys(conn,instrument_uuid,deleted=False):
+    deleted = "true" if deleted else "false"
+    cursor = conn.cursor()
+    query = f"""
+    SELECT
+        uuid AS survey_uuid,
+        created,
+        information,
+        information ->> 'PartakerID' AS partaker_uuid,
+        information ->> 'InstrumentID' AS instrument_uuid,
+        information ->> 'Caption' AS survey_name,
+        information ->> 'Description' AS survey_description,
+        information ->> 'BookletID' AS booklet_id,
+        information ->> 'Instant' AS instant,
+        information ->> 'Data' AS data
+    FROM public.cohorte_v2
+    WHERE classname = 'Survey'
+        AND deleted = {deleted}
+        AND information ->> 'InstrumentID' = '{str(instrument_uuid)}';
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    surveys = []
+    for survey in result:
+        surveys.append(dict(zip(columns,survey)))
+    for i,survey in enumerate(surveys):
+        data = json.loads(survey["data"]) if survey["data"] else {}
+        surveys[i] = {**surveys[i], **data}
+        surveys[i].pop('data', None)
+    return surveys
 
 def get_partaker_booklets(conn,partaker_uuid):
     surveys = get_partaker_surveys(conn,[partaker_uuid])
