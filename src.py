@@ -27,6 +27,13 @@ def uuid_from_caption(caption,connection,deleted=False):
     uuid = result[0][0]
     return uuid
 
+def partaker_caption_from_uuid(connection,uuid):
+    cursor = connection.cursor()
+    query = f"SELECT information ->> 'Caption' FROM cohorte_v2 WHERE uuid = '{uuid}'"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    caption = result[0][0]
+    return caption
 
 def extract_code(x):
     try:
@@ -61,20 +68,47 @@ def get_partaker_surveys(conn,partaker_uuids,deleted=False):
     deleted = "true" if deleted else "false"
     cursor = conn.cursor()
     query = f"""
-    SELECT
-        uuid AS survey_uuid,
-        created,
-        information ->> 'PartakerID' AS partaker_uuid,
-        information ->> 'InstrumentID' AS instrument_uuid,
-        information ->> 'Caption' AS survey_name,
-        information ->> 'Description' AS survey_description,
-        information ->> 'BookletID' AS booklet_id,
-        information ->> 'Instant' AS instant,
-        information ->> 'Data' AS data
-    FROM public.cohorte_v2
-    WHERE classname = 'Survey'
-        AND deleted = {deleted}
-        AND super IN {str(partaker_uuids).replace("[","(").replace("]",")")};
+    SELECT 
+    cohorte_v2.uuid AS survey_uuid, 
+    created, 
+    information ->> 'PartakerID' AS partaker_uuid, 
+    partaker_caption, 
+    information ->> 'InstrumentID' AS instrument_uuid, 
+    information ->> 'Caption' AS survey_name, 
+    information ->> 'Description' AS survey_description, 
+    information ->> 'BookletID' AS booklet_id, 
+    booklet_caption, 
+    information ->> 'Instant' AS instant, 
+    information ->> 'Interviewer' AS interviewer, 
+    information ->> 'SurveyDate' AS survey_date, 
+    information ->> 'Status' AS status, 
+    information ->> 'Data' AS data 
+    FROM 
+    public.cohorte_v2 
+    LEFT JOIN (
+        SELECT 
+        uuid, 
+        information ->> 'Caption' AS partaker_caption 
+        FROM 
+        public.cohorte_v2 
+        WHERE 
+        classname = 'Partaker'
+    ) pa ON information ->> 'PartakerID' = pa.uuid 
+    LEFT JOIN (
+        SELECT 
+        uuid, 
+        information ->> 'Caption' AS booklet_caption 
+        FROM 
+        public.cohorte_v2 
+        WHERE 
+        classname = 'Booklet'
+    ) bo ON information ->> 'BookletID' = bo.uuid 
+    WHERE 
+    classname = 'Survey' 
+    AND deleted = {deleted} 
+    AND super IN (
+        {str(partaker_uuids).replace("[","(").replace("]",")")}
+    );
     """
     cursor.execute(query)
     result = cursor.fetchall()
@@ -153,19 +187,43 @@ def get_surveys(conn,instrument_uuid,deleted=False):
     deleted = "true" if deleted else "false"
     cursor = conn.cursor()
     query = f"""
-    SELECT
-        uuid AS survey_uuid,
-        created,
-        information,
-        information ->> 'PartakerID' AS partaker_uuid,
-        information ->> 'InstrumentID' AS instrument_uuid,
-        information ->> 'Caption' AS survey_name,
-        information ->> 'Description' AS survey_description,
-        information ->> 'BookletID' AS booklet_id,
-        information ->> 'Instant' AS instant,
-        information ->> 'Data' AS data
-    FROM public.cohorte_v2
-    WHERE classname = 'Survey'
+    SELECT 
+    cohorte_v2.uuid AS survey_uuid, 
+    created, 
+    information ->> 'PartakerID' AS partaker_uuid, 
+    partaker_caption, 
+    information ->> 'InstrumentID' AS instrument_uuid, 
+    information ->> 'Caption' AS survey_name, 
+    information ->> 'Description' AS survey_description, 
+    information ->> 'BookletID' AS booklet_id, 
+    booklet_caption, 
+    information ->> 'Instant' AS instant, 
+    information ->> 'Interviewer' AS interviewer, 
+    information ->> 'SurveyDate' AS survey_date, 
+    information ->> 'Status' AS status, 
+    information ->> 'Data' AS data 
+    FROM 
+    public.cohorte_v2 
+    LEFT JOIN (
+        SELECT 
+        uuid, 
+        information ->> 'Caption' AS partaker_caption 
+        FROM 
+        public.cohorte_v2 
+        WHERE 
+        classname = 'Partaker'
+    ) pa ON information ->> 'PartakerID' = pa.uuid 
+    LEFT JOIN (
+        SELECT 
+        uuid, 
+        information ->> 'Caption' AS booklet_caption 
+        FROM 
+        public.cohorte_v2 
+        WHERE 
+        classname = 'Booklet'
+    ) bo ON information ->> 'BookletID' = bo.uuid 
+    WHERE 
+    classname = 'Survey' 
         AND deleted = {deleted}
         AND information ->> 'InstrumentID' = '{str(instrument_uuid)}';
     """
