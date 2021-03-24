@@ -191,7 +191,8 @@ def get_surveys(conn,instrument_uuid,deleted=False):
     cohorte_v2.uuid AS survey_uuid, 
     created, 
     information ->> 'PartakerID' AS partaker_uuid, 
-    partaker_caption, 
+    partaker_caption,
+    partaker_group,
     information ->> 'InstrumentID' AS instrument_uuid, 
     information ->> 'Caption' AS survey_name, 
     information ->> 'Description' AS survey_description, 
@@ -201,13 +202,15 @@ def get_surveys(conn,instrument_uuid,deleted=False):
     information ->> 'Interviewer' AS interviewer, 
     information ->> 'SurveyDate' AS survey_date, 
     information ->> 'Status' AS status, 
-    information ->> 'Data' AS data 
+    information ->> 'Data' AS data,
+    information
     FROM 
     public.cohorte_v2 
     LEFT JOIN (
         SELECT 
         uuid, 
-        information ->> 'Caption' AS partaker_caption 
+        information ->> 'Caption' AS partaker_caption,
+        information ->> 'Group' AS partaker_group
         FROM 
         public.cohorte_v2 
         WHERE 
