@@ -242,6 +242,34 @@ def get_surveys(conn,instrument_uuid,deleted=False):
         surveys[i].pop('data', None)
     return surveys
 
+def justify_na(x):
+    na_columns = x.index[x.isna()]
+    if "Justification" in x.information:
+        for c in na_columns:
+            if c in x.information["Justification"]:
+                x[c] = x.information["Justification"][c]
+        return x
+    else:
+        return x
+
+def list_to_element(l):
+    for e in l:
+        if e != None:
+            return e
+
+def cell_parser(c):
+    if isinstance(c,list):
+        return list_to_element(c)
+    else:
+        return c
+
+def get_surveys_df(conn, istrument_uuid):
+    surveys = get_surveys(conn,istrument_uuid)
+    surveys = pd.DataFrame(surveys)
+    surveys = surveys.applymap(cell_parser)
+    surveys = surveys.apply(justify_na,axis=1)
+    return surveys
+
 def get_partaker_booklets(conn,partaker_uuid):
     surveys = get_partaker_surveys(conn,[partaker_uuid])
     booklets = set([(survey["booklet_id"],partaker_uuid,survey["created"]) for survey in surveys])
