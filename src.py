@@ -210,7 +210,8 @@ def get_surveys(conn,instrument_uuid,deleted=False):
         SELECT 
         uuid, 
         information ->> 'Caption' AS partaker_caption,
-        information ->> 'Group' AS partaker_group
+        information ->> 'Group' AS partaker_group,
+        deleted AS partaker_deleted
         FROM 
         public.cohorte_v2 
         WHERE 
@@ -228,6 +229,7 @@ def get_surveys(conn,instrument_uuid,deleted=False):
     WHERE 
     classname = 'Survey' 
         AND deleted = {deleted}
+        AND partaker_deleted = false
         AND information ->> 'InstrumentID' = '{str(instrument_uuid)}';
     """
     cursor.execute(query)
@@ -268,6 +270,7 @@ def get_surveys_df(conn, istrument_uuid):
     surveys = pd.DataFrame(surveys)
     surveys = surveys.applymap(cell_parser)
     surveys = surveys.apply(justify_na,axis=1)
+    surveys = surveys[surveys.information.apply(lambda x: "Data" in x)]
     return surveys
 
 def get_partaker_booklets(conn,partaker_uuid):
