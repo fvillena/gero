@@ -4,6 +4,34 @@ import pandas as pd
 import re
 import json
 
+GROUPS = {
+    "G001":"GERO Sin grupo",
+    "G011":"GERO Elegible",
+    "G012":"GERO No elegible",
+    "G013":"GERO Elegible Excluído (evaluadoras)",
+    "G014":"GERO Elegible Excluido (participante)",
+    "G021":"GERO Incluido",
+    "G022":"GERO Excluido PV",
+    "G031":"GERO Cohorte T1",
+    "G033":"GERO Cohorte T2",
+    "G034":"GERO Cohorte T3",
+    "G032":"GERO Excluido MD",
+    "G041":"GERO Seguimiento",
+    "G042":"GERO Desertor",
+    "G051":"GERO Genética",
+    "C001":"Control Sano T1",
+    "C003":"Control Sano T2",
+    "C004":"Control Sano T3",
+    "C101":"Control Paciente AD",
+    "C102":"Control Paciente EP",
+    "C103":"Control Paciente UAI",
+    "C104":"Control Paciente Excluído",
+    "C105":"Control Paciente DFT",
+    "C106":"Control Paciente APP",
+    "C199":"Control Paciente Otro",
+    "$999":"Basura (NO SE EXPORTA)"
+}
+
 def create_connection(user,password,host,port,database):
     try:
         connection = psycopg2.connect(user = user,
@@ -271,6 +299,7 @@ def get_surveys_df(conn, istrument_uuid):
     surveys = surveys.applymap(cell_parser)
     surveys = surveys.apply(justify_na,axis=1)
     surveys = surveys[surveys.information.apply(lambda x: "Data" in x)]
+    surveys["partaker_group"] = surveys.partaker_group.apply(lambda x: GROUPS[x] if x in GROUPS else x)
     return surveys
 
 def get_partaker_booklets(conn,partaker_uuid):
