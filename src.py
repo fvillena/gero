@@ -323,6 +323,23 @@ def get_surveys_from_booklet(conn,booklet):
     result = cursor.fetchall()
     return [survey[0] for survey in result]
 
+def get_instruments_from_booklet(conn,booklet_uuid):
+    cursor = conn.cursor()
+    query = f"""
+    SELECT 
+	    information 
+    FROM 
+        public.cohorte_v2
+    WHERE 
+        classname = 'Booklet'
+        AND uuid = '{booklet_uuid}'
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    assert(len(result) == 1)
+    information = result[0][0]
+    return information["References"]
+
 def change_object_creation_time(conn,object_uuid,creation_time):
     cur = conn.cursor()
     query = f""" UPDATE public.cohorte_v2
