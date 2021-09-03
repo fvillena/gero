@@ -300,6 +300,7 @@ def get_surveys_df(conn, istrument_uuid):
     surveys = surveys.apply(justify_na,axis=1)
     surveys = surveys[surveys.information.apply(lambda x: "Data" in x)]
     surveys["partaker_group"] = surveys.partaker_group.apply(lambda x: GROUPS[x] if x in GROUPS else x)
+    surveys["created"] = pd.to_datetime(surveys["created"],unit='ms')
     return surveys
 
 def get_partaker_booklets(conn,partaker_uuid):
