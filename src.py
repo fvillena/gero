@@ -211,7 +211,7 @@ def get_objects(conn,object_uuids):
         os.append(o)
     return os
 
-def get_surveys(conn,instrument_uuid,deleted=False):
+def get_surveys(conn,instrument_uuid = None,deleted=False):
     deleted = "true" if deleted else "false"
     cursor = conn.cursor()
     query = f"""
@@ -258,7 +258,7 @@ def get_surveys(conn,instrument_uuid,deleted=False):
     classname = 'Survey' 
         AND deleted = {deleted}
         AND partaker_deleted = false
-        AND information ->> 'InstrumentID' = '{str(instrument_uuid)}';
+        {f"AND information ->> 'InstrumentID' = '{str(instrument_uuid)}'" if instrument_uuid != None else ""};
     """
     cursor.execute(query)
     result = cursor.fetchall()
