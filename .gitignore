@@ -2,3 +2,5 @@
 *.env
 !sample.env
 *.pyc
+*.xlsx
+/venv
