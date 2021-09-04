@@ -6,7 +6,10 @@ import io
 import dotenv
 import json
 import pandas as pd
-dotenv.load_dotenv("local.env")
+
+if not "host" in os.environ:
+    import dotenv
+    dotenv.load_dotenv(".env")
 
 conn = gero.create_connection(
     user=os.environ.get("user"),
