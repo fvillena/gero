@@ -341,6 +341,23 @@ def get_instruments_from_booklet(conn,booklet_uuid):
     information = result[0][0]
     return information["References"]
 
+def list_instruments(conn):
+    cursor = conn.cursor()
+    query = f"""
+    SELECT 
+        uuid,
+        information ->> 'Caption' as caption
+    FROM 
+        public.cohorte_v2
+    WHERE 
+        classname = 'Instrument'
+        AND deleted = false
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    result = [{"uuid":uuid, "name":name} for uuid,name in result]
+    return result
+
 def change_object_creation_time(conn,object_uuid,creation_time):
     cur = conn.cursor()
     query = f""" UPDATE public.cohorte_v2
